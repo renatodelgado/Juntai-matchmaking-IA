@@ -18,7 +18,7 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install -r requirements-dev.txt
-      - run: python -m pytest tests/test_rules.py tests/test_eligibility.py -q
+      - run: python -m pytest tests/test_rules.py tests/test_eligibility.py tests/test_service_auth.py -q
       - uses: azure/login@v2
         with:
           client-id: ${{ vars.AZURE_CLIENT_ID }}
