@@ -1,3 +1,6 @@
+import os
+import secrets
+from starlette.responses import JSONResponse
 
 from fastapi import Depends, FastAPI, HTTPException
 from app.content import rank_content
@@ -13,6 +16,18 @@ app = FastAPI(
     description="API de recomendação de startups para investidores",
     version="0.1.0",
 )
+
+
+@app.middleware("http")
+async def service_auth(request, call_next):
+    if request.url.path != "/health":
+        key = os.getenv("MATCHMAKING_API_KEY", "")
+        required = os.getenv("MATCHMAKING_REQUIRE_AUTH") == "true"
+        if required and not key:
+            return JSONResponse({"detail": "Service authentication unavailable."}, status_code=503)
+        if key and not secrets.compare_digest(request.headers.get("x-matchmaking-key", ""), key):
+            return JSONResponse({"detail": "Unauthorized."}, status_code=401)
+    return await call_next(request)
 
 
 @app.get("/")
